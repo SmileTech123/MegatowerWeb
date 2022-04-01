@@ -56,3 +56,5 @@ C:\Lavoro\MegatowerWebSharp\MegatowerWeb\MegatowerWeb\obj\Debug\MegatowerWeb.pdb
 C:\Lavoro\MegatowerWebSharp\MegatowerWeb\MegatowerWeb\bin\EncUtil.dll
 C:\Lavoro\MegatowerWebSharp\MegatowerWeb\MegatowerWeb\bin\EncUtil.pdb
 C:\Lavoro\MegatowerWebSharp\MegatowerWeb\MegatowerWeb\bin\EncUtil.xml
+C:\gestionali\msprojects\ASP.NET\MegatowerWeb\obj\Debug\MegatowerWeb.dll
+C:\gestionali\msprojects\ASP.NET\MegatowerWeb\obj\Debug\MegatowerWeb.pdb
