@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+@{
+    Layout = "_Layout.cshtml";
+    var goview = Request["goview"];
+    Page.link = "Ticket.cshtml";
+    var mts = new MegatowerWeb.MegatowerService.ServiziMegaTowerSoapClient();
+    System.Data.DataTable tbl = (System.Data.DataTable)Session["tbl"];
+    string pagina = Request["pagina"];
+    string parkinguser = "";
+    string idDitta = "0";
+    string ticketId = Request["ticket"];
+    if (goview == null)
+    {
+        goview = "start";
+    }
+    if (pagina == null)
+    {
+        pagina = "1";
+    }
+
+    if (tbl != null)
+    {
+        System.Data.DataRow row = tbl.Rows[0];
+        parkinguser = (string)row["iduser"];
+        if (!row["idditta"].Equals(DBNull.Value))
+        {
+            idDitta = (string)row["idditta"];
+        }
+    }
+    else
+    {
+        Response.Redirect("Default.cshtml?view=Ticket");
+    }
+
+
+}
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+
+    <form id="formMega" action="@Page.link" method="get">
+        @switch (goview)
+        {
+            case "start":
+                @Ticket(mts, parkinguser, idDitta, pagina, ticketId)
+                break;
+            default:
+                break;
+        }
+
+
+    </form>
+
+</body>
+</html>
+
+
+
+
+@helper Ticket(MegatowerWeb.MegatowerService.ServiziMegaTowerSoapClient mts, string parkinguser, string idditta, string pagina, string ticketId)
+{
+
+    System.Data.DataSet parking = new System.Data.DataSet();
+    if (Session["PARKING"] == null)
+    {
+        parking = mts.GetParking(parkinguser, long.Parse(idditta), DateTime.MinValue);
+        Session["PARKING"] = parking;
+    }
+    else
+    {
+        parking = (System.Data.DataSet)Session["PARKING"];
+    }
+
+    System.Data.DataTable tblParking = parking.Tables[0];
+    double Total = tblParking.Rows.Count;
+    double MAX_PAGES = 15;
+    double TotalPages = Math.Round(Total / MAX_PAGES);
+    <div class="optionBar">
+        <button type="button" id="openTicketButton" class="btn btn-primary">Apri ticket</button>
+        <button type="button" id="reload" style="float:right" class="btn-danger btn"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+    <table Class="table table-dark table-hover">
+        <thead>
+            <tr class="text-center">
+                <th scope="col">ID</th>
+                <th scope="col"> Priorità</th>
+                <th scope="col"> Data/Ora segnalazione</th>
+                <th scope="col"> Cliente</th>
+                <th scope="col"> Descrizione</th>
+                <th scope="col"> Prodotto</th>
+                <th scope="col"> Ragione Sociale</th>
+                <th scope="col"> Inserita da</th>
+                <th scope="col"> In lavorazione</th>
+                <th scope="col"> Issue</th>
+                <th scope="col">Jira Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (double index = MAX_PAGES * (double.Parse(pagina) - 1); index < (MAX_PAGES * double.Parse(pagina)) - 1.0; index++)
+            {
+                if (index < Total)
+                {
+                    System.Data.DataRow itm = tblParking.Rows[(int)index];
+                    string descrizione = (string)itm["descrizione"];
+                    <tr id="@itm["id"]" class="text-center">
+                        <th scope="row">@itm["id"]</th>
+                        <td> @itm["priorita"]</td>
+                        <td> @itm["dataora"]</td>
+                        <td>@itm["idcliente"]</td>
+                        @if (descrizione.Length > 100)
+                        {
+                            <td>@descrizione.Substring(0, 100) ...</td>
+                        }
+                        else
+                        {
+                            <td>@descrizione</td>
+                        }
+                        <td>@itm["prodotto"]</td>
+                        <td>@itm["ragionesociale"]</td>
+                        <td>@itm["iduser"]</td>
+                        <td></td>
+                        <td></td>
+                        <td>@itm["jirastatus"]</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <div>
+        <nav aria-label="...">
+            <ul Class="pagination justify-content-center flex-wrap">
+                @for (int index = 1; index < TotalPages; index++)
+                {
+                    if (index == int.Parse(pagina))
+                    {
+                        <li Class="page-item active">
+                            <a href="?pagina=@index" Class="page-link">
+                                @index
+                            </a>
+
+                        </li>
+                    }
+                    else
+                    {
+                        <li Class="page-item">
+                            <a href="?pagina=@index" Class="page-link">
+                                @index
+                            </a>
+                        </li>
+                    }
+                }
+
+
+            </ul>
+        </nav>
+    </div>
+    if (ticketId != null)
+    {
+        System.Data.DataSet intervento = mts.GetIntervento(ticketId, 0, parkinguser);
+        System.Data.DataTable tblIntervento = intervento.Tables[0];
+        System.Data.DataRow interventoRow = tblIntervento.Rows[0];
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Intervento @interventoRow["codhotline"]</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button data-bs-toggle="tab" type="button" role="tab" aria-controls="ticket" aria-selected="true" id="ticket-tab" data-bs-target="#ticket" class="nav-link active" aria-current="page" href="#">Ticket</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button data-bs-toggle="tab" type="button" role="tab" aria-controls="attivita" aria-selected="true" id="attivita-tab" data-bs-target="#attivita" class="nav-link " aria-current="page" href="#">Attività</button>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Rubrica</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Allegati</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Questionario</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Assegnazioni</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Tickets</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Filiazione</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Altro</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Note</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="ticket" role="tabpanel" aria-labelledby="ticket-tab">@TicketTab(mts, parkinguser, interventoRow)</div>
+                            <div class="tab-pane fade  " id="attivita" role="tabpanel" aria-labelledby="attivita-tab">...ciao...</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $(document).ready(() => {
+                var myModal = new bootstrap.Modal(document.getElementById('exampleModal'), {
+                    keyboard: false
+                })
+                myModal.show()
+
+
+            })
+
+
+        </script>
+
+    }
+    @openTicketwithNumber(pagina)
+    <script>
+
+
+        $(document).ready(() => {
+            var myModal = new bootstrap.Modal(document.getElementById('openTicket'), {
+                keyboard: false
+            })
+
+            $("#openTicketButton").click(() => {
+                myModal.show()
+            })
+            $("#reload").click(() => {
+                location.reload();
+            })
+            $('tr').dblclick(function () {
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                var id = $(this).attr('id');
+                var pagina = urlParams.get('pagina')
+                if (pagina == null) pagina = 1
+                console.log(pagina)
+                location.href = "?pagina=" + pagina + "&ticket=" + id
+
+                //do something with id
+            })
+        })
+    </script>
+}
+
+
+
+@helper TicketTab(MegatowerWeb.MegatowerService.ServiziMegaTowerSoapClient mts, string parkinguser, System.Data.DataRow interventoRow)
+{
+    @*@MegaDropDownList(mts,parkinguser,interventoRow["idlivello"])*@
+    System.Data.DataSet Cliente = mts.GetCliente(interventoRow["idcliente"].ToString());
+    System.Data.DataTable tblCliente = Cliente.Tables[0];
+    System.Data.DataRow rowCliente = Cliente.Tables[0].Rows[0];
+    <br />
+    <div class="row">
+        <div class="col-sm">
+            <label>Data</label>
+            <input readonly class="form-control" value="@interventoRow["coddatahotline"]" />
+        </div>
+        <div class="col-sm">
+            <label>Inserita da</label>
+            <input readonly class="form-control" value="@interventoRow["codoperatore"]" />
+        </div>
+        <div class="col-sm">
+            <label>Area</label>
+            <input readonly class="form-control" value="@interventoRow["codareainsert"]" />
+        </div>
+        <div class="col-sm">
+            <label>Chiusa</label>
+            <input readonly class="form-control" value="@interventoRow["risoltauser"]" />
+        </div>
+        <div class="col-sm">
+            <label>Il</label>
+            <input readonly class="form-control" value="@interventoRow["risoltadata"]" />
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-3">
+            <label>Cliente</label>
+            <input class="form-control" value="@rowCliente["codice"]" />
+        </div>
+        <div class="col-9">
+            <label>Ragione Sociale</label>
+            <input class="form-control" value="@interventoRow["ragione_sociale"]" />
+        </div>
+
+
+    </div>
+    <div class="row">
+        <div class="col-2">
+            <label>CAP</label>
+            <input class="form-control" value="@rowCliente["cap"]" />
+        </div>
+        <div class="col-3">
+            <label>Comune</label>
+            <input class="form-control" value="@rowCliente["comune"]" />
+        </div>
+        <div class="col-1">
+            <label>Prov.</label>
+            <input class="form-control" value="@rowCliente["provincia"]" />
+        </div>
+        <div class="col-6">
+            <label>Indirizzo</label>
+            <input class="form-control" value="@rowCliente["indirizzo"]" />
+        </div>
+
+
+    </div>
+    <div class="row">
+        <div class="col-3">
+            <label>Referente</label>
+            <input class="form-control" value="@interventoRow["referente"]" />
+        </div>
+        <div class="col-3">
+            <label>Recapito</label>
+            <input class="form-control" value="@interventoRow["telefono1"]" />
+        </div>
+        <div class="col-2">
+            <label>Codice rivenditore</label>
+            <input class="form-control" value="@interventoRow["idcategoriacliente"]" />
+        </div>
+        <div class="col-4">
+            <label>Descrizione rivenditore</label>
+            <input class="form-control"  />
+        </div>
+
+
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            <label>Livello intervento</label>
+            @MegaDropDownList(mts,parkinguser,"")
+        </div>
+        <div class="col-sm">
+            <label>Tipo intervento</label>
+            <input class="form-control" value="@interventoRow["telefono1"]" />
+        </div>
+        <div class="col-sm">
+            <label>Dettaglio intervento</label>
+            <input class="form-control" value="@interventoRow["idcategoriacliente"]" />
+        </div>
+    
+
+
+    </div>
+}
+
+
+
+@helper MegaDropDownList(MegatowerWeb.MegatowerService.ServiziMegaTowerSoapClient mts, string fromUser, object value)
+{
+    System.Data.DataSet dst = mts.GetLivelli(fromUser);
+    System.Data.DataTable tbl = dst.Tables[0];
+    <select class="form-control">
+        @foreach (System.Data.DataRow item in tbl.Rows)
+        {
+            var id = item["id"];
+            var descrizione = item["descrizione"];
+            <option value="@id">@descrizione</option>
+        }
+
+    </select>
+}
+
+
+
+@helper openTicketwithNumber(string pagina)
+{
+    <div class="modal fade" id="openTicket" tabindex="-1" aria-labelledby="openTicket" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Apri Ticket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label>Inserisci ID del ticket</label>
+                    <input name="ticket" class="form-control" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button type="submit" class="btn btn-primary">Apri</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Hidden("pagina", pagina)
+}
+
+
+

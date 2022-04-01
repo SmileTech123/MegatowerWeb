@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://163.172.107.120:8686/mts/wsmts.asmx?wsdl" docRef="http://163.172.107.120:8686/mts/wsmts.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://163.172.107.120:8686/mts/wsmts.asmx" xmlns:q1="http://www.igesa.net/MegaTower" binding="q1:Servizi_x005F_x0020_MegaTowerSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://163.172.107.120:8686/mts/wsmts.asmx" xmlns:q2="http://www.igesa.net/MegaTower" binding="q2:Servizi_x005F_x0020_MegaTowerSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

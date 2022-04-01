@@ -1,0 +1,167 @@
+﻿@{
+    Layout = "_Layout.cshtml";
+    Page.link = "Default.cshtml";
+    string goview = Request["goview"];
+    var ClasseDiv = "login-dark";
+    var view = Request["view"];
+    var email = Request["email"];
+    var password = EncUtil.Encryption.CryptPassword(Request["password"]);
+    String userName = "";
+    String tipoUtente = "";
+    System.Data.DataTable tbl = (System.Data.DataTable)Session["tbl"];
+
+    if (goview == null)
+    {
+        goview = "start";
+    }
+
+    if (goview == "homepage")
+    {
+        ClasseDiv = "";
+    }
+
+    if (tbl != null)
+    {
+        System.Data.DataRow row = tbl.Rows[0];
+        userName = row["nome"] + " " + row["cognome"];
+
+        if (!row["can_edituser"].Equals(DBNull.Value) && (string)row["can_edituser"] == "S")
+        {
+            tipoUtente = "Amministratore";
+        }
+        else
+        {
+            tipoUtente = "Operatore";
+        }
+    }
+
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <title></title>
+</head>
+<body>
+    <div class="@ClasseDiv">
+        <form id="formMega" action="@Page.link" method="get">
+            @switch (goview)
+            {
+                case "start":
+                    @LoginPage(view);
+                    break;
+                case "verify":
+                    @LoginVerify(email, password, view);
+                    break;
+                case "homepage":
+                    @Homepage(userName, tipoUtente);
+                    break;
+                default:
+                    break;
+            }
+
+
+        </form>
+    </div>
+</body>
+</html>
+
+
+@helper LoginPage(string view)
+{
+    <div>
+        <h2 Class="text-center">Megatower</h2>
+        <h6 Class="text-center">Accedi</h6>
+        <div Class="illustration"><i class="icon fa-duotone fa-radar"></i></div>
+
+        <div Class="form-group"><input class="form-control" autocomplete="username" type="text" name="email" placeholder="Email"></div>
+        <div Class="form-group input-group"><input class="form-control" autocomplete="current-password" type="password" id="password" name="password" placeholder="Password"> <i id="viewpass" style="font-size:30px;" class=" icon ion-ios-eye-outline"></i></div>
+        <div Class="form-group d-grid gap-2"><button class="btn btn-primary" type="submit">Accedi</button></div>
+    </div>
+    @Html.Hidden("view", view);
+    @Html.Hidden("goview", "verify");
+    <script>
+        $("#viewpass").click(() => {
+            var type = $("#password").prop("type")
+            if (type == "password") {
+                $("#password").prop("type", "text")
+            } else {
+                $("#password").prop("type", "password")
+            }
+
+
+        })
+    </script>
+}
+
+
+
+
+@helper LoginVerify(String email, String password, string view)
+{
+    var mts = new MegatowerWeb.MegatowerService.ServiziMegaTowerSoapClient();
+    System.Data.DataSet dst = mts.Login(email, password, "Megatower Web", "1.0.0");
+
+    if (dst.Tables[0].Rows.Count != 0)
+    {
+        System.Data.DataTable tbl = dst.Tables[0];
+        System.Data.DataRow riga = tbl.Rows[0];
+        var user = riga["nome"] + " " + riga["cognome"];
+        var isAdmin = false;
+        if (!riga["can_edituser"].Equals(DBNull.Value) && riga["can_edituser"] == "S")
+        {
+            isAdmin = true;
+        }
+         Session.Add("tbl", tbl);
+        if (view != "")
+        {
+            Response.Redirect(view + ".cshtml");
+        }
+        else
+        {
+            @Html.Hidden("goview", "homepage");
+        }
+
+       
+
+        <script>
+            $("#formMega").submit()
+        </script>
+    }
+    else
+    {
+        <div class="text-center" style="color:red">Errore credenziali errate!</div>
+        <div class="text-center"><a class="btn btn-primary" href="~/Default.vbhtml">Riprova</a></div>
+    }
+
+
+
+
+}
+
+
+
+
+@helper Homepage(String user, string tipoUtente)
+{
+    <div Class="centered text-center">
+        <div Class="fa-1x">
+            <i style="color:white;font-size:10rem;margin-bottom:15px" Class="fa-duotone fa-radar text-center fa-spin"></i>
+        </div>
+
+        <h2 Class="text-center">Benvenuto @user</h2>
+        <h4 Class="text-center">Tipo: @tipoUtente</h4>
+        <h5 Class="text-center">Per iniziare clicca su una delle voci</h5>
+        <h5> del menù a sinistra</h5>
+    </div>
+}
+
+
+
+
+
+
+
+
