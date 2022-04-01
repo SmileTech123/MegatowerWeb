@@ -265,7 +265,9 @@
     @*@MegaDropDownList(mts,parkinguser,interventoRow["idlivello"])*@
     System.Data.DataSet Cliente = mts.GetCliente(interventoRow["idcliente"].ToString());
     System.Data.DataTable tblCliente = Cliente.Tables[0];
-    System.Data.DataRow rowCliente = Cliente.Tables[0].Rows[0];
+
+
+
     <br />
     <div class="row">
         <div class="col-sm">
@@ -290,10 +292,11 @@
         </div>
 
     </div>
+
     <div class="row">
         <div class="col-3">
             <label>Cliente</label>
-            <input class="form-control" value="@rowCliente["codice"]" />
+            <input class="form-control" value="@interventoRow["idcliente"]" />
         </div>
         <div class="col-9">
             <label>Ragione Sociale</label>
@@ -302,26 +305,33 @@
 
 
     </div>
-    <div class="row">
-        <div class="col-2">
-            <label>CAP</label>
-            <input class="form-control" value="@rowCliente["cap"]" />
-        </div>
-        <div class="col-3">
-            <label>Comune</label>
-            <input class="form-control" value="@rowCliente["comune"]" />
-        </div>
-        <div class="col-1">
-            <label>Prov.</label>
-            <input class="form-control" value="@rowCliente["provincia"]" />
-        </div>
-        <div class="col-6">
-            <label>Indirizzo</label>
-            <input class="form-control" value="@rowCliente["indirizzo"]" />
-        </div>
+
+    if (tblCliente.Rows.Count > 0)
+    {
+        System.Data.DataRow rowCliente = Cliente.Tables[0].Rows[0];
 
 
-    </div>
+        <div class="row">
+            <div class="col-2">
+                <label>CAP</label>
+                <input class="form-control" value="@rowCliente["cap"]" />
+            </div>
+            <div class="col-3">
+                <label>Comune</label>
+                <input class="form-control" value="@rowCliente["comune"]" />
+            </div>
+            <div class="col-1">
+                <label>Prov.</label>
+                <input class="form-control" value="@rowCliente["provincia"]" />
+            </div>
+            <div class="col-6">
+                <label>Indirizzo</label>
+                <input class="form-control" value="@rowCliente["indirizzo"]" />
+            </div>
+
+
+        </div>
+    }
     <div class="row">
         <div class="col-3">
             <label>Referente</label>
@@ -337,7 +347,7 @@
         </div>
         <div class="col-4">
             <label>Descrizione rivenditore</label>
-            <input class="form-control"  />
+            <input class="form-control" />
         </div>
 
 
@@ -345,7 +355,7 @@
     <div class="row">
         <div class="col-sm">
             <label>Livello intervento</label>
-            @MegaDropDownList(mts,parkinguser,"")
+            @MegaDropDownList(mts, parkinguser, "")
         </div>
         <div class="col-sm">
             <label>Tipo intervento</label>
@@ -355,7 +365,7 @@
             <label>Dettaglio intervento</label>
             <input class="form-control" value="@interventoRow["idcategoriacliente"]" />
         </div>
-    
+
 
 
     </div>
