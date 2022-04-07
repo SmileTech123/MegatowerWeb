@@ -26,6 +26,13 @@
         color: #2980ef;
     }
 
+.tippy-box[data-theme~='personal'] {
+    width:300px;
+    border: 1px solid white;
+}
+    .tippy-box[data-theme~='personal'][data-placement^='top'] > .tippy-arrow::before {
+        border-top-color: white;
+    }
     .login-dark form .form-control {
         background: none;
         border: none;

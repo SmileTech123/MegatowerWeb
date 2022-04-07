@@ -39,7 +39,7 @@
 <head>
     <title></title>
 </head>
-<body>
+<body style="color:white">
 
     <form id="formMega" action="@Page.link" method="get">
         @switch (goview)
@@ -82,7 +82,9 @@
         <button type="button" id="openTicketButton" class="btn btn-primary">Apri ticket</button>
         <button type="button" id="reload" style="float:right" class="btn-danger btn"><i class="fa-solid fa-rotate"></i></button>
     </div>
-    <table Class="table table-dark table-hover">
+    <div class="row">
+        <div class="col-sm">
+            <table Class="table table-dark table-hover">
         <thead>
             <tr class="text-center">
                 <th scope="col">ID</th>
@@ -129,6 +131,12 @@
             }
         </tbody>
     </table>
+        </div>
+        <div class="col-sm">
+             <div style="background-color:#212529" id='calendar'></div>
+        </div>
+    </div>
+    
     <div>
         <nav aria-label="...">
             <ul Class="pagination justify-content-center flex-wrap">
@@ -236,6 +244,45 @@
             var myModal = new bootstrap.Modal(document.getElementById('openTicket'), {
                 keyboard: false
             })
+
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                themeSystem: 'standard',
+                initialView: 'timeGridWeek',
+                eventDidMount: function (info) {
+                    console.log(info,info.event._def.extendedProps.description)
+                        tippy(info.el, {
+                            content: info.event._def.extendedProps.description,
+                            placement: 'top',
+                            animation: 'scale',
+                            theme:'personal',
+                            followCursor: true,
+                            trigger: 'mouseenter focus',
+                        
+                        });
+                },
+                events: [
+                    {
+                        title: 'Chiamare cliente 004',
+                        start: '2022-04-06T17:10:00',
+                        description:"chiamare ajdasjdad",
+                        allDay: false
+                    },
+                    {
+                        title: 'event2',
+                        start: '2022-04-06',
+                        end: '2022-04-08'
+                    },
+                    {
+                        title: 'event3',
+                        start: '2010-01-09T12:30:00',
+                        allDay: false // will make the time show
+                    }
+                ]
+            });
+           
+            calendar.setOption('locale', 'it');
+            calendar.render();
 
             $("#openTicketButton").click(() => {
                 myModal.show()
